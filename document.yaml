@@ -12,6 +12,14 @@ to: docx
 output-file: article.docx
 standalone: true
 reference-doc: reference.docx
+filters: # обработчики
+  - pandoc-crossref # для нумерации рисунков и таблиц
+  - citeproc # для списка литературы
+bibliography: references.bib
+csl: gost.csl
 fail-if-warnings: true
 metadata:
   lang: ru-RU
+  figureTitle: Рис.
+  tableTitle: Таблица
+  figPrefix: рис.

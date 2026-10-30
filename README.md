@@ -5,20 +5,23 @@
 
 ## Запуск на Windows
 
-Нужны Windows 10/11 x64 и Pandoc **3.12.1**.
+Нужны Windows 10/11 x64, Pandoc **3.12.1** и pandoc-crossref **0.3.26**.
 
 1. Скачайте [официальный Windows ZIP Pandoc 3.12.1](https://github.com/jgm/pandoc/releases/download/3.12.1/pandoc-3.12.1-windows-x86_64.zip).
 2. Распакуйте архив. Папку с `pandoc.exe` поместите в проект под именем
    `pandoc`, сохранив остальные файлы пакета.
-3. Откройте папку проекта. В адресной строке Проводника введите `cmd`.
-4. Выполните:
+3. Скачайте [pandoc-crossref 0.3.26 для Windows](https://github.com/lierdakil/pandoc-crossref/releases/download/v0.3.26/pandoc-crossref-Windows-X64.7z).
+   Распакуйте архив и положите `pandoc-crossref.exe` в ту же папку `pandoc`.
+   В Windows 10 для распаковки `.7z` можно использовать [7-Zip](https://www.7-zip.org/).
+4. Откройте папку проекта. В адресной строке Проводника введите `cmd`.
+5. Выполните:
 
    ```bat
    build.cmd
    ```
 
 Результат — **[article.docx](article.docx)** в корне проекта.
-Если Pandoc доступен через PATH, папка `pandoc/` не нужна.
+Если обе программы доступны через PATH, папка `pandoc/` не нужна.
 
 При установленном GNU Make та же сборка запускается командой `make`.
 Команда `make clean` удаляет готовый DOCX.
@@ -49,6 +52,8 @@ pandoc --defaults=document.yaml
 | `images/`              | Исходные изображения PNG                             |
 | `reference.docx`       | Стили Word и параметры страницы                      |
 | `document.yaml`        | Порядок разделов и параметры Pandoc                  |
+| `references.bib`       | Источники для автоматического списка литературы      |
+| `gost.csl`             | Стиль оформления ссылок и библиографии               |
 | `build.cmd`            | Запуск Pandoc на Windows                             |
 | `Makefile`             | Вызов сборки и очистки через GNU Make                |
 
@@ -65,5 +70,3 @@ pandoc --defaults=document.yaml
 | `Image Caption`, `Table Caption` | Подписи рисунков и таблиц                         |
 | `Compact`, `Table`               | Абзацы в ячейках, сетка и оформление таблиц       |
 | `Copyright`                      | Строка авторского права                           |
-
-Документация Pandoc: [оформление через reference.docx](https://pandoc.org/MANUAL.html#option--reference-doc).

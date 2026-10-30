@@ -21,7 +21,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install Pandoc
+      - name: Install Pandoc and crossref
         shell: pwsh
         run: |
           $archive = Join-Path $env:RUNNER_TEMP 'pandoc.zip'
@@ -31,6 +31,13 @@ jobs:
             throw 'Pandoc archive checksum mismatch.'
           }
           Expand-Archive -LiteralPath $archive -DestinationPath $tools
+          $crossref = Join-Path $env:RUNNER_TEMP 'crossref.7z'
+          Invoke-WebRequest -Uri 'https://github.com/lierdakil/pandoc-crossref/releases/download/v0.3.26/pandoc-crossref-Windows-X64.7z' -OutFile $crossref -TimeoutSec 180
+          if ((Get-FileHash -LiteralPath $crossref -Algorithm SHA256).Hash -ne '6b14345ef08bc663c89e1114d714987765ceb966596efad6afbcf3331d13a50e') {
+            throw 'Crossref archive checksum mismatch.'
+          }
+          tar -xf $crossref -C "$tools\pandoc-3.12.1"
+          if ($LASTEXITCODE -ne 0) { throw 'Crossref extraction failed.' }
           "$tools\pandoc-3.12.1" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
       - name: Build document
