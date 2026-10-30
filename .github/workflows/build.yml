@@ -1,0 +1,67 @@
+name: Build documents
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build DOCX
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install Pandoc
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'pandoc.zip'
+          $tools = Join-Path $env:RUNNER_TEMP 'pandoc'
+          Invoke-WebRequest -Uri 'https://github.com/jgm/pandoc/releases/download/3.12.1/pandoc-3.12.1-windows-x86_64.zip' -OutFile $archive -TimeoutSec 180
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -ne '6ef431cb20b2c24a0371fc19200dc49d452be54b1b5c9239f3462841ef53e587') {
+            throw 'Pandoc archive checksum mismatch.'
+          }
+          Expand-Archive -LiteralPath $archive -DestinationPath $tools
+          "$tools\pandoc-3.12.1" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Build document
+        shell: cmd
+        run: build.cmd
+
+      - name: Save document
+        uses: actions/upload-artifact@v7
+        with:
+          name: article-docx
+          path: article.docx
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Publish DOCX
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    timeout-minutes: 10
+    # Публикации нужны права записи; обычная сборка имеет только права чтения.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: article-docx
+
+      - name: Create release with document
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$env:RELEASE_TAG" article.docx --repo "$env:GITHUB_REPOSITORY" --verify-tag --title "$env:RELEASE_TAG" --generate-notes
